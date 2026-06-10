@@ -1,9 +1,12 @@
 // js/app.js
 
 window.App = {
-  init: function() {
-    // Limpiar datos antiguos para dejar en 0
-    Storage.clear();
+  init: async function() {
+    // Ya no limpiamos el storage en cada recarga
+    // Storage.clear();
+    
+    // Cargar todos los datos del backend
+    await Storage.loadAll();
     
     this.setCurrentDate();
     this.setupNavigation();
@@ -94,7 +97,7 @@ window.App = {
         if (!input.value) input.value = today;
       });
 
-      formEl.addEventListener('submit', (e) => {
+      formEl.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         // Check if we're editing (form has data-edit-id)
@@ -112,23 +115,39 @@ window.App = {
           }
         });
 
-        if (editId) {
-          Storage.update(f.key, editId, dataObj);
-          formEl.removeAttribute('data-edit-id');
-          const submitBtn = formEl.querySelector('button[type="submit"]');
-          if(submitBtn) submitBtn.textContent = submitBtn.getAttribute('data-original-text') || 'Registrar';
-          this.showNotification('Registro actualizado exitosamente', 'success');
-        } else {
-          Storage.add(f.key, dataObj);
-          this.showNotification('Registro guardado exitosamente', 'success');
+        // Deshabilitar botón mientras guarda
+        const submitBtn = formEl.querySelector('button[type="submit"]');
+        const originalText = submitBtn ? submitBtn.textContent : '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Guardando...';
         }
-        
-        formEl.reset();
-        // Reset dates again
-        dateInputs.forEach(input => input.value = today);
-        
-        this.renderAllSections();
-        Charts.updateAll();
+
+        try {
+          if (editId) {
+            await Storage.update(f.key, editId, dataObj);
+            formEl.removeAttribute('data-edit-id');
+            if(submitBtn) submitBtn.textContent = submitBtn.getAttribute('data-original-text') || 'Registrar';
+            this.showNotification('Registro actualizado exitosamente en la BD', 'success');
+          } else {
+            await Storage.add(f.key, dataObj);
+            this.showNotification('Registro guardado exitosamente en la BD', 'success');
+          }
+          
+          formEl.reset();
+          // Reset dates again
+          dateInputs.forEach(input => input.value = today);
+          
+          this.renderAllSections();
+          Charts.updateAll();
+        } catch (error) {
+          this.showNotification('Error al guardar en el servidor', 'error');
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            if (!editId) submitBtn.textContent = originalText;
+          }
+        }
       });
     });
   },
@@ -563,12 +582,16 @@ window.App = {
     );
   },
 
-  executeDelete: function(key, id) {
-    Storage.delete(key, id);
-    this.closeModal();
-    this.showNotification('Registro eliminado', 'info');
-    this.renderAllSections();
-    Charts.updateAll();
+  executeDelete: async function(key, id) {
+    try {
+      await Storage.delete(key, id);
+      this.closeModal();
+      this.showNotification('Registro eliminado de la BD', 'info');
+      this.renderAllSections();
+      Charts.updateAll();
+    } catch (error) {
+      this.showNotification('Error al eliminar en el servidor', 'error');
+    }
   },
 
   editItem: function(key, id) {

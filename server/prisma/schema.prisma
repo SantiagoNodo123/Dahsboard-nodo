@@ -1,0 +1,90 @@
+// server/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Sale {
+  id            String   @id @default(uuid())
+  date          String
+  client        String
+  product       String
+  amount        Float
+  paymentMethod String?
+  status        String?
+  notes         String?
+}
+
+model Investment {
+  id             String   @id @default(uuid())
+  name           String
+  type           String?
+  amount         Float
+  date           String
+  expectedReturn Float?
+  status         String?
+  notes          String?
+}
+
+model CapitalMovement {
+  id          String   @id @default(uuid())
+  type        String
+  amount      Float
+  date        String
+  description String?
+  category    String?
+}
+
+model Investor {
+  id             String   @id @default(uuid())
+  name           String
+  email          String?
+  phone          String?
+  amountInvested Float
+  percentage     Float
+  date           String
+  status         String?
+}
+
+model Expense {
+  id        String   @id @default(uuid())
+  concept   String
+  category  String?
+  amount    Float
+  date      String
+  recurring String?
+  notes     String?
+}
+
+model FixedCost {
+  id        String   @id @default(uuid())
+  concept   String
+  amount    Float
+  frequency String?
+  category  String?
+}
+
+model VariableCost {
+  id        String   @id @default(uuid())
+  concept   String
+  amount    Float
+  frequency String?
+  category  String?
+}
+
+model SocialPost {
+  id          String   @id @default(uuid())
+  date        String
+  platform    String
+  contentType String?
+  reach       Int?
+  likes       Int?
+  comments    Int?
+  shares      Int?
+  notes       String?
+}

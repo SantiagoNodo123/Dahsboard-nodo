@@ -1,47 +1,103 @@
 // js/storage.js
 
+const API_URL = 'http://localhost:3000/api';
+
 window.Storage = {
-  // Get data by key
+  // Local cache to keep get() synchronous for the UI
+  data: {
+    'nodo_sales': [],
+    'nodo_investments': [],
+    'nodo_capital': [],
+    'nodo_investors': [],
+    'nodo_expenses': [],
+    'nodo_fixed_costs': [],
+    'nodo_variable_costs': [],
+    'nodo_social_posts': []
+  },
+
+  // Load all data from the backend into the local cache
+  loadAll: async function() {
+    const keys = Object.keys(this.data);
+    try {
+      const promises = keys.map(key => fetch(`${API_URL}/${key}`).then(res => res.json()));
+      const results = await Promise.all(promises);
+      
+      keys.forEach((key, index) => {
+        // results[index] might be { error: '...' } if table doesn't exist, handle it safely
+        this.data[key] = Array.isArray(results[index]) ? results[index] : [];
+      });
+      console.log('Todos los datos cargados desde el servidor:', this.data);
+      return true;
+    } catch (error) {
+      console.error('Error loading data from server:', error);
+      return false;
+    }
+  },
+
+  // Get data (synchronous, from cache)
   get: function(key) {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : [];
+    return this.data[key] || [];
   },
 
-  // Save full array to key
-  set: function(key, data) {
-    localStorage.setItem(key, JSON.stringify(data));
-  },
-
-  // Add new item to key
-  add: function(key, item) {
-    const data = this.get(key);
+  // Add new item (async to backend, then update cache)
+  add: async function(key, item) {
     item.id = item.id || this.generateId();
-    data.push(item);
-    this.set(key, data);
-    return data;
+    try {
+      const response = await fetch(`${API_URL}/${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item)
+      });
+      const savedItem = await response.json();
+      
+      if (this.data[key]) {
+        this.data[key].push(savedItem);
+      }
+      return this.data[key];
+    } catch (error) {
+      console.error('Error adding item:', error);
+      throw error;
+    }
   },
 
   // Update item by ID
-  update: function(key, id, updatedFields) {
-    const data = this.get(key);
-    const index = data.findIndex(item => item.id === id);
-    if (index !== -1) {
-      data[index] = { ...data[index], ...updatedFields };
-      this.set(key, data);
-      return true;
+  update: async function(key, id, updatedFields) {
+    try {
+      const response = await fetch(`${API_URL}/${key}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedFields)
+      });
+      const savedItem = await response.json();
+      
+      const index = this.data[key].findIndex(item => item.id === id);
+      if (index !== -1) {
+        this.data[key][index] = { ...this.data[key][index], ...savedItem };
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating item:', error);
+      throw error;
     }
-    return false;
   },
 
   // Delete item by ID
-  delete: function(key, id) {
-    const data = this.get(key);
-    const newData = data.filter(item => item.id !== id);
-    this.set(key, newData);
-    return newData;
+  delete: async function(key, id) {
+    try {
+      await fetch(`${API_URL}/${key}/${id}`, {
+        method: 'DELETE'
+      });
+      
+      this.data[key] = this.data[key].filter(item => item.id !== id);
+      return this.data[key];
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      throw error;
+    }
   },
 
-  // Get item by ID
+  // Get item by ID from cache
   getById: function(key, id) {
     const data = this.get(key);
     return data.find(item => item.id === id) || null;
@@ -52,27 +108,30 @@ window.Storage = {
     return 'id_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   },
 
-  // Export all data
+  // Export all data (from cache)
   exportData: function() {
-    const exportObj = {};
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.startsWith('nodo_')) {
-        exportObj[key] = JSON.parse(localStorage.getItem(key));
-      }
-    }
-    return JSON.stringify(exportObj, null, 2);
+    return JSON.stringify(this.data, null, 2);
   },
 
-  // Import data
-  importData: function(jsonString) {
+  // Import data (save to backend one by one)
+  importData: async function(jsonString) {
     try {
-      const data = JSON.parse(jsonString);
-      for (const key in data) {
-        if (key.startsWith('nodo_')) {
-          localStorage.setItem(key, JSON.stringify(data[key]));
+      const importedData = JSON.parse(jsonString);
+      for (const key in importedData) {
+        if (key.startsWith('nodo_') && Array.isArray(importedData[key])) {
+          // Para no hacer cientos de peticiones, lo ideal en el futuro es un endpoint /bulk,
+          // por ahora hacemos POST uno por uno
+          for (const item of importedData[key]) {
+             await fetch(`${API_URL}/${key}`, {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify(item)
+             });
+          }
         }
       }
+      // Reload cache
+      await this.loadAll();
       return true;
     } catch (e) {
       console.error('Error importing data:', e);
@@ -80,20 +139,13 @@ window.Storage = {
     }
   },
 
-  // Clear all data
+  // Clear all data - not supported directly in the backend yet without writing a /clear endpoint,
+  // we'll just throw a warning. For full DB wipes, a specific backend route is safer.
   clear: function() {
-    const keysToRemove = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.startsWith('nodo_')) {
-        keysToRemove.push(key);
-      }
-    }
-    keysToRemove.forEach(key => localStorage.removeItem(key));
+    console.warn("Storage.clear() ya no borra la base de datos SQL por seguridad.");
   },
 
-  // Initialize sample data if empty
   initSampleData: function() {
-    // Ya no cargamos datos de prueba. El dashboard inicia en 0.
+    // Ya no cargamos datos locales.
   }
 };
