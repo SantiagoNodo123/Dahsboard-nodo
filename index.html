@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Dashboard integral de gestión empresarial para Nodo Tech & Growth. Control de ventas, inversiones, capital, gastos, costos y redes sociales.">
+  <title>Nodo Tech & Growth — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar" id="sidebar">
+
+      <!-- SIDEBAR HEADER -->
+      <div class="sidebar-header">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" class="sidebar-logo-icon">
+          <defs>
+            <radialGradient id="nodeGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#b47aff" stop-opacity="0.6"/>
+              <stop offset="100%" stop-color="#9b59f0" stop-opacity="0"/>
+            </radialGradient>
+            <linearGradient id="nodeFill" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#b47aff"/>
+              <stop offset="100%" stop-color="#9b59f0"/>
+            </linearGradient>
+          </defs>
+          <circle cx="18" cy="18" r="17" fill="url(#nodeGlow)"/>
+          <circle cx="18" cy="18" r="12" fill="url(#nodeFill)" stroke="#6a3db5" stroke-width="1.5"/>
+          <circle cx="18" cy="18" r="4" fill="#fff" opacity="0.9"/>
+          <line x1="18" y1="6" x2="18" y2="14" stroke="#fff" stroke-width="1.2" opacity="0.6"/>
+          <line x1="18" y1="22" x2="18" y2="30" stroke="#fff" stroke-width="1.2" opacity="0.6"/>
+          <line x1="6" y1="18" x2="14" y2="18" stroke="#fff" stroke-width="1.2" opacity="0.6"/>
+          <line x1="22" y1="18" x2="30" y2="18" stroke="#fff" stroke-width="1.2" opacity="0.6"/>
+          <line x1="9.5" y1="9.5" x2="14.5" y2="14.5" stroke="#fff" stroke-width="1" opacity="0.4"/>
+          <line x1="21.5" y1="21.5" x2="26.5" y2="26.5" stroke="#fff" stroke-width="1" opacity="0.4"/>
+          <line x1="26.5" y1="9.5" x2="21.5" y2="14.5" stroke="#fff" stroke-width="1" opacity="0.4"/>
+          <line x1="14.5" y1="21.5" x2="9.5" y2="26.5" stroke="#fff" stroke-width="1" opacity="0.4"/>
+        </svg>
+        <div class="sidebar-brand">
+          <span class="sidebar-brand-name">Nodo</span>
+          <span class="sidebar-brand-tagline">Tech &amp; Growth</span>
+        </div>
+      </div>
+
+      <!-- SIDEBAR NAV -->
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-section="overview" id="nav-overview">
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">Resumen General</span>
+        </button>
+        <button class="nav-item" data-section="sales" id="nav-sales">
+          <span class="nav-icon">💰</span>
+          <span class="nav-text">Ventas</span>
+        </button>
+        <button class="nav-item" data-section="investments" id="nav-investments">
+          <span class="nav-icon">📈</span>
+          <span class="nav-text">Inversiones</span>
+        </button>
+        <button class="nav-item" data-section="capital" id="nav-capital">
+          <span class="nav-icon">🏦</span>
+          <span class="nav-text">Capital</span>
+        </button>
+        <button class="nav-item" data-section="investors" id="nav-investors">
+          <span class="nav-icon">👥</span>
+          <span class="nav-text">Inversionistas</span>
+        </button>
+        <button class="nav-item" data-section="expenses" id="nav-expenses">
+          <span class="nav-icon">💸</span>
+          <span class="nav-text">Gastos</span>
+        </button>
+        <button class="nav-item" data-section="costs" id="nav-costs">
+          <span class="nav-icon">📋</span>
+          <span class="nav-text">Costos</span>
+        </button>
+        <button class="nav-item" data-section="social" id="nav-social">
+          <span class="nav-icon">📱</span>
+          <span class="nav-text">Redes Sociales</span>
+        </button>
+      </nav>
+
+      <!-- SIDEBAR FOOTER -->
+      <div class="sidebar-footer">
+        <span>v1.0 · Nodo Tech &amp; Growth</span>
+      </div>
+    </aside>
+
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main class="main-content">
+
+      <!-- TOP BAR -->
+      <header class="top-bar">
+        <button class="mobile-toggle" id="mobile-toggle" aria-label="Abrir menú">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="top-bar-info">
+          <h1 class="top-bar-title" id="page-title">Resumen General</h1>
+          <span class="top-bar-date" id="current-date"></span>
+        </div>
+        <div class="top-bar-actions">
+          <button class="btn btn-outline" id="btn-export">📥 Exportar</button>
+          <button class="btn btn-outline" id="btn-import">📤 Importar</button>
+          <input type="file" id="import-file" accept=".json" hidden>
+        </div>
+      </header>
+
+      <div class="content-area">
+
+        <!-- ============================== -->
+        <!-- SECTION 1: OVERVIEW            -->
+        <!-- ============================== -->
+        <section class="section active" id="section-overview">
+
+          <!-- KPI Grid -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-icon">💰</div>
+              <div class="kpi-info">
+                <div class="kpi-value" id="kpi-total-sales">$0</div>
+                <div class="kpi-label">Ventas Totales</div>
+                <div class="kpi-trend trend-up" id="kpi-total-sales-trend">↑ 0% vs mes anterior</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon">🏦</div>
+              <div class="kpi-info">
+                <div class="kpi-value" id="kpi-total-capital">$0</div>
+                <div class="kpi-label">Capital Disponible</div>
+                <div class="kpi-trend trend-up" id="kpi-total-capital-trend">↑ 0% vs mes anterior</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon">📈</div>
+              <div class="kpi-info">
+                <div class="kpi-value" id="kpi-total-investments">$0</div>
+                <div class="kpi-label">Total Inversiones</div>
+                <div class="kpi-trend trend-up" id="kpi-total-investments-trend">↑ 0% vs mes anterior</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon">💸</div>
+              <div class="kpi-info">
+                <div class="kpi-value" id="kpi-total-expenses">$0</div>
+                <div class="kpi-label">Gastos del Mes</div>
+                <div class="kpi-trend trend-down" id="kpi-total-expenses-trend">↓ 0% vs mes anterior</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon">📊</div>
+              <div class="kpi-info">
+                <div class="kpi-value" id="kpi-roi">0%</div>
+                <div class="kpi-label">ROI General</div>
+                <div class="kpi-trend trend-up" id="kpi-roi-trend">↑ 0% vs mes anterior</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon">❤️</div>
+              <div class="kpi-info">
+                <div class="kpi-value" id="kpi-engagement">0%</div>
+                <div class="kpi-label">Engagement Promedio</div>
+                <div class="kpi-trend trend-up" id="kpi-engagement-trend">↑ 0% vs mes anterior</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Grid -->
+          <div class="charts-grid grid-2">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Ventas vs Gastos</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="chart-revenue-expenses"></canvas>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Distribución de Costos</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="chart-costs-donut"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Activity Section -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Actividad Reciente</h3>
+            </div>
+            <div class="card-body">
+              <div id="activity-list" class="activity-list"></div>
+            </div>
+          </div>
+
+        </section>
+
+
+        <!-- ============================== -->
+        <!-- SECTION 2: SALES               -->
+        <!-- ============================== -->
+        <section class="section" id="section-sales">
+
+          <div class="section-header">
+            <h2 class="section-title">Registro de Ventas</h2>
+            <div class="stats-row" id="sales-stats-row">
+              <div class="stat-badge" id="sales-stat-total">Total: $0</div>
+              <div class="stat-badge" id="sales-stat-count">Registros: 0</div>
+            </div>
+          </div>
+
+          <!-- Form Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Nueva Venta</h3>
+            </div>
+            <div class="card-body">
+              <form id="form-sale" class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="sale-date">Fecha</label>
+                  <input class="form-input" type="date" id="sale-date" name="date" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="sale-client">Cliente</label>
+                  <input class="form-input" type="text" id="sale-client" name="client" placeholder="Nombre del cliente" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="sale-product">Producto</label>
+                  <input class="form-input" type="text" id="sale-product" name="product" placeholder="Producto o servicio" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="sale-amount">Monto</label>
+                  <input class="form-input" type="number" id="sale-amount" name="amount" placeholder="0.00" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="sale-payment-method">Método de Pago</label>
+                  <select class="form-select" id="sale-payment-method" name="paymentMethod">
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="Transferencia">Transferencia</option>
+                    <option value="Tarjeta">Tarjeta</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="sale-status">Estado</label>
+                  <select class="form-select" id="sale-status" name="status">
+                    <option value="Completada">Completada</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Cancelada">Cancelada</option>
+                  </select>
+                </div>
+                <div class="form-group form-full">
+                  <label class="form-label" for="sale-notes">Notas</label>
+                  <input class="form-input" type="text" id="sale-notes" name="notes" placeholder="Notas adicionales">
+                </div>
+                <div class="form-actions form-full">
+                  <button type="submit" class="btn btn-primary" id="btn-submit-sale">Registrar Venta</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Chart Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Ventas Mensuales</h3>
+            </div>
+            <div class="card-body">
+              <canvas id="chart-sales-bar"></canvas>
+            </div>
+          </div>
+
+          <!-- Table Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Historial de Ventas</h3>
+              <div class="table-controls">
+                <input type="text" class="form-input search-input" id="search-sales" placeholder="🔍 Buscar venta...">
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-wrapper">
+                <table class="data-table" id="table-sales">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Cliente</th>
+                      <th>Producto</th>
+                      <th>Monto</th>
+                      <th>Método</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-sales-body"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="empty-sales">
+                <span class="empty-icon">💰</span>
+                <p>No hay ventas registradas aún</p>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+
+        <!-- ============================== -->
+        <!-- SECTION 3: INVESTMENTS          -->
+        <!-- ============================== -->
+        <section class="section" id="section-investments">
+
+          <div class="section-header">
+            <h2 class="section-title">Gestión de Inversiones</h2>
+            <div class="stats-row" id="investments-stats-row">
+              <div class="stat-badge" id="investments-stat-total">Total: $0</div>
+              <div class="stat-badge" id="investments-stat-count">Registros: 0</div>
+            </div>
+          </div>
+
+          <!-- Form Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Nueva Inversión</h3>
+            </div>
+            <div class="card-body">
+              <form id="form-investment" class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="investment-name">Nombre</label>
+                  <input class="form-input" type="text" id="investment-name" name="name" placeholder="Nombre de la inversión" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="investment-type">Tipo</label>
+                  <select class="form-select" id="investment-type" name="type">
+                    <option value="Tecnología">Tecnología</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Infraestructura">Infraestructura</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="investment-amount">Monto</label>
+                  <input class="form-input" type="number" id="investment-amount" name="amount" placeholder="0.00" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="investment-date">Fecha</label>
+                  <input class="form-input" type="date" id="investment-date" name="date" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="investment-expected-return">Retorno Esperado</label>
+                  <input class="form-input" type="number" id="investment-expected-return" name="expectedReturn" placeholder="% retorno esperado" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="investment-status">Estado</label>
+                  <select class="form-select" id="investment-status" name="status">
+                    <option value="Activa">Activa</option>
+                    <option value="Completada">Completada</option>
+                    <option value="Pausada">Pausada</option>
+                  </select>
+                </div>
+                <div class="form-group form-full">
+                  <label class="form-label" for="investment-notes">Notas</label>
+                  <input class="form-input" type="text" id="investment-notes" name="notes" placeholder="Notas adicionales">
+                </div>
+                <div class="form-actions form-full">
+                  <button type="submit" class="btn btn-primary" id="btn-submit-investment">Registrar Inversión</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Chart Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Retorno de Inversiones</h3>
+            </div>
+            <div class="card-body">
+              <canvas id="chart-investment-returns"></canvas>
+            </div>
+          </div>
+
+          <!-- Table Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Historial de Inversiones</h3>
+              <div class="table-controls">
+                <input type="text" class="form-input search-input" id="search-investments" placeholder="🔍 Buscar inversión...">
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-wrapper">
+                <table class="data-table" id="table-investments">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Nombre</th>
+                      <th>Tipo</th>
+                      <th>Monto</th>
+                      <th>Retorno Esperado</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-investments-body"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="empty-investments">
+                <span class="empty-icon">📈</span>
+                <p>No hay inversiones registradas aún</p>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+
+        <!-- ============================== -->
+        <!-- SECTION 4: CAPITAL              -->
+        <!-- ============================== -->
+        <section class="section" id="section-capital">
+
+          <div class="section-header">
+            <h2 class="section-title">Gestión de Capital</h2>
+          </div>
+
+          <!-- Capital KPI Row -->
+          <div class="kpi-grid kpi-grid-3">
+            <div class="kpi-card">
+              <div class="kpi-icon">🏦</div>
+              <div class="kpi-info">
+                <div class="kpi-value" id="kpi-capital-total">$0</div>
+                <div class="kpi-label">Capital Total</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon">📥</div>
+              <div class="kpi-info">
+                <div class="kpi-value" id="kpi-capital-entries">$0</div>
+                <div class="kpi-label">Entradas del Mes</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon">📤</div>
+              <div class="kpi-info">
+                <div class="kpi-value" id="kpi-capital-exits">$0</div>
+                <div class="kpi-label">Salidas del Mes</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Nuevo Movimiento</h3>
+            </div>
+            <div class="card-body">
+              <form id="form-capital-entry" class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="capital-type">Tipo</label>
+                  <select class="form-select" id="capital-type" name="type">
+                    <option value="Entrada">Entrada</option>
+                    <option value="Salida">Salida</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="capital-amount">Monto</label>
+                  <input class="form-input" type="number" id="capital-amount" name="amount" placeholder="0.00" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="capital-date">Fecha</label>
+                  <input class="form-input" type="date" id="capital-date" name="date" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="capital-description">Descripción</label>
+                  <input class="form-input" type="text" id="capital-description" name="description" placeholder="Descripción del movimiento" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="capital-category">Categoría</label>
+                  <select class="form-select" id="capital-category" name="category">
+                    <option value="Ventas">Ventas</option>
+                    <option value="Inversión">Inversión</option>
+                    <option value="Préstamo">Préstamo</option>
+                    <option value="Dividendo">Dividendo</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </div>
+                <div class="form-actions form-full">
+                  <button type="submit" class="btn btn-primary" id="btn-submit-capital">Registrar Movimiento</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Chart Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Evolución del Capital</h3>
+            </div>
+            <div class="card-body">
+              <canvas id="chart-capital-line"></canvas>
+            </div>
+          </div>
+
+          <!-- Table Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Historial de Movimientos</h3>
+              <div class="table-controls">
+                <input type="text" class="form-input search-input" id="search-capital" placeholder="🔍 Buscar movimiento...">
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-wrapper">
+                <table class="data-table" id="table-capital">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Tipo</th>
+                      <th>Monto</th>
+                      <th>Descripción</th>
+                      <th>Categoría</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-capital-body"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="empty-capital">
+                <span class="empty-icon">🏦</span>
+                <p>No hay movimientos registrados aún</p>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+
+        <!-- ============================== -->
+        <!-- SECTION 5: INVESTORS            -->
+        <!-- ============================== -->
+        <section class="section" id="section-investors">
+
+          <div class="section-header">
+            <h2 class="section-title">Gestión de Inversionistas</h2>
+          </div>
+
+          <!-- Form Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Nuevo Inversionista</h3>
+            </div>
+            <div class="card-body">
+              <form id="form-investor" class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="investor-name">Nombre</label>
+                  <input class="form-input" type="text" id="investor-name" name="name" placeholder="Nombre completo" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="investor-email">Email</label>
+                  <input class="form-input" type="email" id="investor-email" name="email" placeholder="correo@ejemplo.com" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="investor-phone">Teléfono</label>
+                  <input class="form-input" type="tel" id="investor-phone" name="phone" placeholder="+52 000 000 0000">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="investor-amount">Monto Invertido</label>
+                  <input class="form-input" type="number" id="investor-amount" name="amountInvested" placeholder="0.00" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="investor-percentage">Participación</label>
+                  <input class="form-input" type="number" id="investor-percentage" name="percentage" placeholder="% participación" step="0.01" min="0" max="100">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="investor-date">Fecha</label>
+                  <input class="form-input" type="date" id="investor-date" name="date" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="investor-status">Estado</label>
+                  <select class="form-select" id="investor-status" name="status">
+                    <option value="Activo">Activo</option>
+                    <option value="Inactivo">Inactivo</option>
+                  </select>
+                </div>
+                <div class="form-actions form-full">
+                  <button type="submit" class="btn btn-primary" id="btn-submit-investor">Registrar Inversionista</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Chart Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Distribución de Participación</h3>
+            </div>
+            <div class="card-body">
+              <canvas id="chart-investors-pie"></canvas>
+            </div>
+          </div>
+
+          <!-- Table Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Lista de Inversionistas</h3>
+              <div class="table-controls">
+                <input type="text" class="form-input search-input" id="search-investors" placeholder="🔍 Buscar inversionista...">
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-wrapper">
+                <table class="data-table" id="table-investors">
+                  <thead>
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Email</th>
+                      <th>Teléfono</th>
+                      <th>Inversión</th>
+                      <th>Participación %</th>
+                      <th>Fecha</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-investors-body"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="empty-investors">
+                <span class="empty-icon">👥</span>
+                <p>No hay inversionistas registrados aún</p>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+
+        <!-- ============================== -->
+        <!-- SECTION 6: EXPENSES             -->
+        <!-- ============================== -->
+        <section class="section" id="section-expenses">
+
+          <div class="section-header">
+            <h2 class="section-title">Control de Gastos</h2>
+            <div class="stats-row" id="expenses-stats-row">
+              <div class="stat-badge" id="expenses-stat-total">Total: $0</div>
+              <div class="stat-badge" id="expenses-stat-count">Registros: 0</div>
+            </div>
+          </div>
+
+          <!-- Form Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Nuevo Gasto</h3>
+            </div>
+            <div class="card-body">
+              <form id="form-expense" class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="expense-concept">Concepto</label>
+                  <input class="form-input" type="text" id="expense-concept" name="concept" placeholder="Concepto del gasto" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="expense-category">Categoría</label>
+                  <select class="form-select" id="expense-category" name="category">
+                    <option value="Nómina">Nómina</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Software">Software</option>
+                    <option value="Oficina">Oficina</option>
+                    <option value="Servicios">Servicios</option>
+                    <option value="Logística">Logística</option>
+                    <option value="Otro">Otro</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="expense-amount">Monto</label>
+                  <input class="form-input" type="number" id="expense-amount" name="amount" placeholder="0.00" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="expense-date">Fecha</label>
+                  <input class="form-input" type="date" id="expense-date" name="date" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="expense-recurring">Recurrente</label>
+                  <select class="form-select" id="expense-recurring" name="recurring">
+                    <option value="No">No</option>
+                    <option value="Sí">Sí</option>
+                  </select>
+                </div>
+                <div class="form-group form-full">
+                  <label class="form-label" for="expense-notes">Notas</label>
+                  <input class="form-input" type="text" id="expense-notes" name="notes" placeholder="Notas adicionales">
+                </div>
+                <div class="form-actions form-full">
+                  <button type="submit" class="btn btn-primary" id="btn-submit-expense">Registrar Gasto</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Chart Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Gastos por Categoría</h3>
+            </div>
+            <div class="card-body">
+              <canvas id="chart-expenses-bar"></canvas>
+            </div>
+          </div>
+
+          <!-- Table Card -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Historial de Gastos</h3>
+              <div class="table-controls">
+                <input type="text" class="form-input search-input" id="search-expenses" placeholder="🔍 Buscar gasto...">
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-wrapper">
+                <table class="data-table" id="table-expenses">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Concepto</th>
+                      <th>Categoría</th>
+                      <th>Monto</th>
+                      <th>Recurrente</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-expenses-body"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="empty-expenses">
+                <span class="empty-icon">💸</span>
+                <p>No hay gastos registrados aún</p>
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+
+        <!-- ============================== -->
+        <!-- SECTION 7: COSTS                -->
+        <!-- ============================== -->
+        <section class="section" id="section-costs">
+
+          <div class="section-header">
+            <h2 class="section-title">Gestión de Costos</h2>
+          </div>
+
+          <!-- Tabs -->
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="fixed" id="tab-btn-fixed">Costos Fijos</button>
+            <button class="tab-btn" data-tab="variable" id="tab-btn-variable">Costos Variables</button>
+          </div>
+
+          <!-- Tab Pane: Fixed Costs -->
+          <div class="tab-pane active" id="tab-pane-fixed">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Agregar Costo Fijo</h3>
+              </div>
+              <div class="card-body">
+                <form id="form-fixed-cost" class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label" for="fixed-cost-concept">Concepto</label>
+                    <input class="form-input" type="text" id="fixed-cost-concept" name="concept" placeholder="Concepto del costo" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="fixed-cost-amount">Monto</label>
+                    <input class="form-input" type="number" id="fixed-cost-amount" name="amount" placeholder="0.00" step="0.01" min="0" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="fixed-cost-frequency">Frecuencia</label>
+                    <select class="form-select" id="fixed-cost-frequency" name="frequency">
+                      <option value="Mensual">Mensual</option>
+                      <option value="Semanal">Semanal</option>
+                      <option value="Quincenal">Quincenal</option>
+                      <option value="Anual">Anual</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="fixed-cost-category">Categoría</label>
+                    <select class="form-select" id="fixed-cost-category" name="category">
+                      <option value="Alquiler">Alquiler</option>
+                      <option value="Servicios">Servicios</option>
+                      <option value="Nómina">Nómina</option>
+                      <option value="Seguros">Seguros</option>
+                      <option value="Software">Software</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+                  <div class="form-actions form-full">
+                    <button type="submit" class="btn btn-primary" id="btn-submit-fixed-cost">Agregar Costo Fijo</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Costos Fijos Registrados</h3>
+              </div>
+              <div class="card-body">
+                <div class="table-wrapper">
+                  <table class="data-table" id="table-fixed-costs">
+                    <thead>
+                      <tr>
+                        <th>Concepto</th>
+                        <th>Monto</th>
+                        <th>Frecuencia</th>
+                        <th>Categoría</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="table-fixed-costs-body"></tbody>
+                  </table>
+                </div>
+                <div class="empty-state" id="empty-fixed-costs">
+                  <span class="empty-icon">📋</span>
+                  <p>No hay costos fijos registrados aún</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Pane: Variable Costs -->
+          <div class="tab-pane" id="tab-pane-variable">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Agregar Costo Variable</h3>
+              </div>
+              <div class="card-body">
+                <form id="form-variable-cost" class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label" for="variable-cost-concept">Concepto</label>
+                    <input class="form-input" type="text" id="variable-cost-concept" name="concept" placeholder="Concepto del costo" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="variable-cost-amount">Monto</label>
+                    <input class="form-input" type="number" id="variable-cost-amount" name="amount" placeholder="0.00" step="0.01" min="0" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="variable-cost-frequency">Frecuencia</label>
+                    <select class="form-select" id="variable-cost-frequency" name="frequency">
+                      <option value="Por proyecto">Por proyecto</option>
+                      <option value="Mensual variable">Mensual variable</option>
+                      <option value="Ocasional">Ocasional</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="variable-cost-category">Categoría</label>
+                    <select class="form-select" id="variable-cost-category" name="category">
+                      <option value="Materiales">Materiales</option>
+                      <option value="Comisiones">Comisiones</option>
+                      <option value="Freelancers">Freelancers</option>
+                      <option value="Publicidad">Publicidad</option>
+                      <option value="Envíos">Envíos</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+                  <div class="form-actions form-full">
+                    <button type="submit" class="btn btn-primary" id="btn-submit-variable-cost">Agregar Costo Variable</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Table Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Costos Variables Registrados</h3>
+              </div>
+              <div class="card-body">
+                <div class="table-wrapper">
+                  <table class="data-table" id="table-variable-costs">
+                    <thead>
+                      <tr>
+                        <th>Concepto</th>
+                        <th>Monto</th>
+                        <th>Frecuencia</th>
+                        <th>Categoría</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="table-variable-costs-body"></tbody>
+                  </table>
+                </div>
+                <div class="empty-state" id="empty-variable-costs">
+                  <span class="empty-icon">📋</span>
+                  <p>No hay costos variables registrados aún</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart (outside tabs) -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Costos Fijos vs Variables</h3>
+            </div>
+            <div class="card-body">
+              <canvas id="chart-costs-comparison"></canvas>
+            </div>
+          </div>
+
+        </section>
+
+
+        <!-- ============================== -->
+        <!-- SECTION 8: SOCIAL MEDIA         -->
+        <!-- ============================== -->
+        <section class="section" id="section-social">
+
+          <div class="section-header">
+            <h2 class="section-title">Redes Sociales</h2>
+          </div>
+
+          <!-- Social Platforms Grid -->
+          <div class="social-platforms-grid">
+            <!-- Instagram -->
+            <div class="social-platform-card" id="social-instagram">
+              <div class="platform-icon" style="color: #E1306C">📸</div>
+              <div class="platform-name">Instagram</div>
+              <div class="platform-metrics">
+                <div class="platform-metric">
+                  <div class="platform-metric-value" id="instagram-followers">0</div>
+                  <div class="platform-metric-label">Seguidores</div>
+                </div>
+                <div class="platform-metric">
+                  <div class="platform-metric-value" id="instagram-engagement">0%</div>
+                  <div class="platform-metric-label">Engagement</div>
+                </div>
+              </div>
+            </div>
+            <!-- Facebook -->
+            <div class="social-platform-card" id="social-facebook">
+              <div class="platform-icon" style="color: #1877F2">📘</div>
+              <div class="platform-name">Facebook</div>
+              <div class="platform-metrics">
+                <div class="platform-metric">
+                  <div class="platform-metric-value" id="facebook-followers">0</div>
+                  <div class="platform-metric-label">Seguidores</div>
+                </div>
+                <div class="platform-metric">
+                  <div class="platform-metric-value" id="facebook-engagement">0%</div>
+                  <div class="platform-metric-label">Engagement</div>
+                </div>
+              </div>
+            </div>
+            <!-- TikTok -->
+            <div class="social-platform-card" id="social-tiktok">
+              <div class="platform-icon" style="color: #00f2ea">🎵</div>
+              <div class="platform-name">TikTok</div>
+              <div class="platform-metrics">
+                <div class="platform-metric">
+                  <div class="platform-metric-value" id="tiktok-followers">0</div>
+                  <div class="platform-metric-label">Seguidores</div>
+                </div>
+                <div class="platform-metric">
+                  <div class="platform-metric-value" id="tiktok-engagement">0%</div>
+                  <div class="platform-metric-label">Engagement</div>
+                </div>
+              </div>
+            </div>
+            <!-- LinkedIn -->
+            <div class="social-platform-card" id="social-linkedin">
+              <div class="platform-icon" style="color: #0A66C2">💼</div>
+              <div class="platform-name">LinkedIn</div>
+              <div class="platform-metrics">
+                <div class="platform-metric">
+                  <div class="platform-metric-value" id="linkedin-followers">0</div>
+                  <div class="platform-metric-label">Seguidores</div>
+                </div>
+                <div class="platform-metric">
+                  <div class="platform-metric-value" id="linkedin-engagement">0%</div>
+                  <div class="platform-metric-label">Engagement</div>
+                </div>
+              </div>
+            </div>
+            <!-- Twitter / X -->
+            <div class="social-platform-card" id="social-twitter">
+              <div class="platform-icon" style="color: #1DA1F2">🐦</div>
+              <div class="platform-name">X (Twitter)</div>
+              <div class="platform-metrics">
+                <div class="platform-metric">
+                  <div class="platform-metric-value" id="twitter-followers">0</div>
+                  <div class="platform-metric-label">Seguidores</div>
+                </div>
+                <div class="platform-metric">
+                  <div class="platform-metric-value" id="twitter-engagement">0%</div>
+                  <div class="platform-metric-label">Engagement</div>
+                </div>
+              </div>
+            </div>
+            <!-- YouTube -->
+            <div class="social-platform-card" id="social-youtube">
+              <div class="platform-icon" style="color: #FF0000">🎬</div>
+              <div class="platform-name">YouTube</div>
+              <div class="platform-metrics">
+                <div class="platform-metric">
+                  <div class="platform-metric-value" id="youtube-followers">0</div>
+                  <div class="platform-metric-label">Suscriptores</div>
+                </div>
+                <div class="platform-metric">
+                  <div class="platform-metric-value" id="youtube-engagement">0%</div>
+                  <div class="platform-metric-label">Engagement</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Register Publication Form -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Registrar Publicación</h3>
+            </div>
+            <div class="card-body">
+              <form id="form-social-post" class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="social-date">Fecha</label>
+                  <input class="form-input" type="date" id="social-date" name="date" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="social-platform">Plataforma</label>
+                  <select class="form-select" id="social-platform" name="platform">
+                    <option value="Instagram">Instagram</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="TikTok">TikTok</option>
+                    <option value="LinkedIn">LinkedIn</option>
+                    <option value="Twitter">Twitter</option>
+                    <option value="YouTube">YouTube</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="social-content-type">Tipo de Contenido</label>
+                  <select class="form-select" id="social-content-type" name="contentType">
+                    <option value="Imagen">Imagen</option>
+                    <option value="Video">Video</option>
+                    <option value="Reel">Reel</option>
+                    <option value="Story">Story</option>
+                    <option value="Carrusel">Carrusel</option>
+                    <option value="Texto">Texto</option>
+                    <option value="Live">Live</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="social-reach">Alcance</label>
+                  <input class="form-input" type="number" id="social-reach" name="reach" placeholder="Alcance" min="0">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="social-likes">Likes</label>
+                  <input class="form-input" type="number" id="social-likes" name="likes" placeholder="Likes" min="0">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="social-comments">Comentarios</label>
+                  <input class="form-input" type="number" id="social-comments" name="comments" placeholder="Comentarios" min="0">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="social-shares">Compartidos</label>
+                  <input class="form-input" type="number" id="social-shares" name="shares" placeholder="Compartidos" min="0">
+                </div>
+                <div class="form-group form-full">
+                  <label class="form-label" for="social-notes">Notas</label>
+                  <input class="form-input" type="text" id="social-notes" name="notes" placeholder="Notas sobre el contenido">
+                </div>
+                <div class="form-actions form-full">
+                  <button type="submit" class="btn btn-primary" id="btn-submit-social-post">Registrar Publicación</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Charts Grid -->
+          <div class="charts-grid grid-2">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Engagement por Plataforma</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="chart-engagement"></canvas>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Crecimiento de Seguidores</h3>
+              </div>
+              <div class="card-body">
+                <canvas id="chart-followers"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Publications Table -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Historial de Publicaciones</h3>
+              <div class="table-controls">
+                <input type="text" class="form-input search-input" id="search-social-posts" placeholder="🔍 Buscar publicación...">
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-wrapper">
+                <table class="data-table" id="table-social-posts">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Plataforma</th>
+                      <th>Tipo</th>
+                      <th>Alcance</th>
+                      <th>Likes</th>
+                      <th>Comentarios</th>
+                      <th>Shares</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-social-posts-body"></tbody>
+                </table>
+              </div>
+              <div class="empty-state" id="empty-social-posts">
+                <span class="empty-icon">📱</span>
+                <p>No hay publicaciones registradas aún</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ideas & Strategy Section -->
+          <div class="ideas-section">
+            <div class="section-header">
+              <h3 class="section-title">💡 Ideas Creativas &amp; Estrategias de Engagement</h3>
+              <button class="btn btn-outline" id="btn-refresh-ideas">🔄 Nuevas Ideas</button>
+            </div>
+            <div class="grid-2">
+              <div>
+                <h4 style="margin-bottom: 16px; color: var(--purple-light)">Ideas de Contenido</h4>
+                <div class="ideas-grid" id="ideas-container"></div>
+              </div>
+              <div>
+                <h4 style="margin-bottom: 16px; color: var(--purple-light)">Estrategias de Engagement</h4>
+                <div class="ideas-grid" id="strategy-container"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Brand Colors Section -->
+          <div class="card" style="margin-top: 20px">
+            <div class="card-header">
+              <h3 class="card-title">🎨 Paleta de Colores de Marca</h3>
+            </div>
+            <div class="card-body">
+              <div class="color-palette" id="brand-colors">
+                <!-- Colors will be rendered by JS -->
+              </div>
+            </div>
+          </div>
+
+        </section>
+
+      </div><!-- /.content-area -->
+
+    </main>
+
+  </div><!-- /.dashboard-layout -->
+
+
+  <!-- ============ MODAL ============ -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Modal</h3>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+
+  <!-- ============ NOTIFICATIONS ============ -->
+  <div class="notification-container" id="notification-container"></div>
+
+
+  <!-- ============ SCRIPTS ============ -->
+  <script src="js/storage.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/social.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
