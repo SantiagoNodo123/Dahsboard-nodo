@@ -1,151 +1,120 @@
 // js/storage.js
+// Persistencia 100% localStorage — compatible con GitHub Pages
+// Misma interfaz async que la versión con backend para no cambiar app.js
 
-const API_URL = 'http://localhost:3000/api';
+const STORAGE_PREFIX = 'nodo_';
 
 window.Storage = {
-  // Local cache to keep get() synchronous for the UI
+
+  // Cache en memoria (igual que antes, para que get() sea síncrono)
   data: {
-    'nodo_sales': [],
-    'nodo_investments': [],
-    'nodo_capital': [],
-    'nodo_investors': [],
-    'nodo_expenses': [],
-    'nodo_fixed_costs': [],
+    'nodo_sales':          [],
+    'nodo_investments':    [],
+    'nodo_capital':        [],
+    'nodo_investors':      [],
+    'nodo_expenses':       [],
+    'nodo_fixed_costs':    [],
     'nodo_variable_costs': [],
-    'nodo_social_posts': []
+    'nodo_social_posts':   []
   },
 
-  // Load all data from the backend into the local cache
+  // ─── CARGA INICIAL ──────────────────────────────────────────────────────────
+  // Llamado una vez en App.init() — lee localStorage y llena el cache
   loadAll: async function() {
-    const keys = Object.keys(this.data);
     try {
-      const promises = keys.map(key => fetch(`${API_URL}/${key}`).then(res => res.json()));
-      const results = await Promise.all(promises);
-      
-      keys.forEach((key, index) => {
-        // results[index] might be { error: '...' } if table doesn't exist, handle it safely
-        this.data[key] = Array.isArray(results[index]) ? results[index] : [];
+      Object.keys(this.data).forEach(key => {
+        const raw = localStorage.getItem(key);
+        this.data[key] = raw ? JSON.parse(raw) : [];
       });
-      console.log('Todos los datos cargados desde el servidor:', this.data);
+      console.log('Datos cargados desde localStorage:', this.data);
       return true;
     } catch (error) {
-      console.error('Error loading data from server:', error);
+      console.error('Error cargando datos:', error);
       return false;
     }
   },
 
-  // Get data (synchronous, from cache)
+  // ─── LECTURA SÍNCRONA (desde cache) ─────────────────────────────────────────
   get: function(key) {
     return this.data[key] || [];
   },
 
-  // Add new item (async to backend, then update cache)
+  // ─── ESCRITURA INTERNA ───────────────────────────────────────────────────────
+  // Guarda el array completo en cache Y en localStorage
+  _save: function(key) {
+    localStorage.setItem(key, JSON.stringify(this.data[key] || []));
+  },
+
+  // ─── AGREGAR ─────────────────────────────────────────────────────────────────
   add: async function(key, item) {
     item.id = item.id || this.generateId();
-    try {
-      const response = await fetch(`${API_URL}/${key}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(item)
-      });
-      const savedItem = await response.json();
-      
-      if (this.data[key]) {
-        this.data[key].push(savedItem);
-      }
-      return this.data[key];
-    } catch (error) {
-      console.error('Error adding item:', error);
-      throw error;
-    }
+    if (!this.data[key]) this.data[key] = [];
+    this.data[key].push(item);
+    this._save(key);
+    return this.data[key];
   },
 
-  // Update item by ID
+  // ─── ACTUALIZAR ──────────────────────────────────────────────────────────────
   update: async function(key, id, updatedFields) {
-    try {
-      const response = await fetch(`${API_URL}/${key}/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedFields)
-      });
-      const savedItem = await response.json();
-      
-      const index = this.data[key].findIndex(item => item.id === id);
-      if (index !== -1) {
-        this.data[key][index] = { ...this.data[key][index], ...savedItem };
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Error updating item:', error);
-      throw error;
+    const index = (this.data[key] || []).findIndex(item => item.id === id);
+    if (index !== -1) {
+      this.data[key][index] = { ...this.data[key][index], ...updatedFields };
+      this._save(key);
+      return true;
     }
+    return false;
   },
 
-  // Delete item by ID
+  // ─── ELIMINAR ────────────────────────────────────────────────────────────────
   delete: async function(key, id) {
-    try {
-      await fetch(`${API_URL}/${key}/${id}`, {
-        method: 'DELETE'
-      });
-      
-      this.data[key] = this.data[key].filter(item => item.id !== id);
-      return this.data[key];
-    } catch (error) {
-      console.error('Error deleting item:', error);
-      throw error;
-    }
+    this.data[key] = (this.data[key] || []).filter(item => item.id !== id);
+    this._save(key);
+    return this.data[key];
   },
 
-  // Get item by ID from cache
+  // ─── BUSCAR POR ID ───────────────────────────────────────────────────────────
   getById: function(key, id) {
-    const data = this.get(key);
-    return data.find(item => item.id === id) || null;
+    return (this.data[key] || []).find(item => item.id === id) || null;
   },
 
-  // Generate unique ID
+  // ─── GENERAR ID ÚNICO ────────────────────────────────────────────────────────
   generateId: function() {
     return 'id_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
   },
 
-  // Export all data (from cache)
+  // ─── EXPORTAR ────────────────────────────────────────────────────────────────
   exportData: function() {
     return JSON.stringify(this.data, null, 2);
   },
 
-  // Import data (save to backend one by one)
+  // ─── IMPORTAR ────────────────────────────────────────────────────────────────
   importData: async function(jsonString) {
     try {
-      const importedData = JSON.parse(jsonString);
-      for (const key in importedData) {
-        if (key.startsWith('nodo_') && Array.isArray(importedData[key])) {
-          // Para no hacer cientos de peticiones, lo ideal en el futuro es un endpoint /bulk,
-          // por ahora hacemos POST uno por uno
-          for (const item of importedData[key]) {
-             await fetch(`${API_URL}/${key}`, {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify(item)
-             });
-          }
+      const imported = JSON.parse(jsonString);
+      for (const key in imported) {
+        if (key.startsWith(STORAGE_PREFIX) && Array.isArray(imported[key])) {
+          this.data[key] = imported[key];
+          this._save(key);
         }
       }
-      // Reload cache
-      await this.loadAll();
       return true;
     } catch (e) {
-      console.error('Error importing data:', e);
+      console.error('Error importando datos:', e);
       return false;
     }
   },
 
-  // Clear all data - not supported directly in the backend yet without writing a /clear endpoint,
-  // we'll just throw a warning. For full DB wipes, a specific backend route is safer.
+  // ─── LIMPIAR TODO ────────────────────────────────────────────────────────────
   clear: function() {
-    console.warn("Storage.clear() ya no borra la base de datos SQL por seguridad.");
+    Object.keys(this.data).forEach(key => {
+      this.data[key] = [];
+      localStorage.removeItem(key);
+    });
   },
 
+  // ─── DATOS DE MUESTRA (no se usa, solo por compatibilidad) ──────────────────
   initSampleData: function() {
-    // Ya no cargamos datos locales.
+    // No se cargan datos de prueba. El dashboard inicia en 0.
   }
+
 };
